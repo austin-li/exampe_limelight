@@ -36,8 +36,8 @@ public class Robot extends TimedRobot {
 		left = new Joystick(0);
 		right = new Joystick(1);
 
-		Limelight.setMoveConstants(.2, .1, .5, 20);
-		Limelight.setAlignConstants(.05, .15, .7);
+		Limelight.setMoveConstants(.2, 0, 0, 20);
+		Limelight.setAlignConstants(.05, 0, 0);
   	}
 
 	@Override
@@ -69,7 +69,6 @@ public class Robot extends TimedRobot {
 		double h = 1;
 		double d = h/Math.tan(Limelight.getY() * Math.PI/180);
 
-		System.out.println(move);
 		drive.arcadeDrive(move - left.getY(), align + left.getX(), false);
 	}
 

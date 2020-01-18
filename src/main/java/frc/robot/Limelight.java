@@ -9,8 +9,9 @@ public class Limelight {
 	private static NetworkTableEntry tv, tx, ty, ta;
 	private static int v;
 	private static double x, y, a;
-	private static double moveP, moveMin, moveMax, targetY;
-	private static double alignP, alignMin, alignMax;
+	private static double moveP, targetY;
+	private static double alignP;
+	private static PID movePID, alignPID;
 
 	static {
 		table = NetworkTableInstance.getDefault().getTable("limelight");
@@ -21,12 +22,18 @@ public class Limelight {
 	}
 
 	public static void update() {
-		table.getEntry("pipeline").setNumber(1);
+		table.getEntry("pipeline").setNumber(2);
 		table.getEntry("ledMode").setNumber(0);
 		v = (int) tv.getDouble(0.0);
 		x = tx.getDouble(0.0);
 		y = ty.getDouble(0.0);
 		a = ta.getDouble(0.0);
+		if (v == 0) {
+			movePID.reset();
+			alignPID.reset();
+		}
+		movePID.update(targetY - y);
+		alignPID.update(x);
 	}
 
 	public static void disable() {
@@ -49,39 +56,25 @@ public class Limelight {
 		return table.getEntry(entry);
 	}
 
-	public static void setMoveConstants(double p, double min, double max, double y) {
-		moveP = p;
-		moveMin = min;
-		moveMax = max;
+	public static void setMoveConstants(double kp, double ki, double kd, double y) {
+		movePID = new PID(kp, ki, kd);
 		targetY = y;
 	}
-	public static void setAlignConstants(double p, double min, double max) {
-		alignP = p;
-		alignMin = min;
-		alignMax = max;
+	public static void setAlignConstants(double kp, double ki, double kd) {
+		alignPID = new PID(kp, ki, kd);
 	}
 	
 	public static double align() {
 		if (Math.abs(x) > 1) {
-			return aclamp(alignP * x, alignMin, alignMax);
+			return alignPID.getPower();
 		}
 		return 0;
 	}
 	public static double move() {
 		if (v == 1) {
-			return aclamp(moveP * (targetY - y), moveMin, moveMax);
+			return movePID.getPower();
 		}
 		return 0;
-	}
-	
-	private static double clamp(double n, double min, double max) {
-		return Math.min(Math.max(n, min), max);
-	}
-	private static double aclamp(double n, double min, double max) {
-		if (n > 0) {
-			return clamp(n, min, max);
-		}
-		return clamp(n, -max, -min);
 	}
 
 	public static void flash() {
