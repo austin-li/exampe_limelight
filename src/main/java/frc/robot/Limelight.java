@@ -9,8 +9,7 @@ public class Limelight {
 	private static NetworkTableEntry tv, tx, ty, ta;
 	private static int v;
 	private static double x, y, a;
-	private static double moveP, targetY;
-	private static double alignP;
+	private static double targetY;
 	private static PID movePID, alignPID;
 
 	static {
